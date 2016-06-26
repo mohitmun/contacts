@@ -85,7 +85,8 @@ my_print([H|T]) ->
 my_search(Q1, A1) ->
   my_search1(Q1, A1, []).
 
-my_search1(Q2, [H2 | T2], R) ->
+
+my_search1(Q2, [H2 | T2], R1) ->
   % Index = string:str(H1, Q1),
   % Lets count occurances
   H1 = string:to_lower(H2),
@@ -94,8 +95,8 @@ my_search1(Q2, [H2 | T2], R) ->
   Index = match(H1, Q1, Q1, 0),
   % io:format("searching:  index:~s term:~s  index ~n", [integer_to_list(Index), H1]),
   if Index =/= 0 ->
-    my_search1(Q1, T1, R ++ H2);
-    true -> my_search1(Q1,T1, R)
+    my_search1(Q1, T1, R1 ++ [H2] );
+    true -> my_search1(Q1,T1, R1)
   end;
 
 my_search1(Q1,[], R) ->
