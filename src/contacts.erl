@@ -12,38 +12,38 @@ start() ->
     %     {ok, [N]} = io:fread("Enter name:\n", "~d")
     % end
     % {ok,lol,lol}.
-    {ok, ok, show_options([])}.
+    {ok, ok, show_options([""])}.
 
 get_response1() ->
   A = io:get_line("1) Add contact 2) Search 3) Exit\n"),
   string:strip(A, right, $\n).
 
 get_name() ->
-  B = io:get_line("Enter Name:"),
+  B = io:get_line("Enter Name: "),
   string:strip(B, right, $\n).
 
 get_search_term() ->
-  C = io:get_line("Search Name:"),
+  C = io:get_line("Search Name: "),
   string:strip(C, right, $\n).
 
-show_options([]) ->
-  Response = get_response1(),
-  case Response of
-    "1" ->
-      Name = get_name(),
-      show_options([[Name]]);
-    "2" ->
-      Q = get_search_term(),
-      my_search(Q,[]),
-      show_options([]);
+% show_options([]) ->
+%   Response = get_response1(),
+%   case Response of
+%     "1" ->
+%       Name = get_name(),
+%       show_options([[Name]]);
+%     "2" ->
+%       Q = get_search_term(),
+%       my_search(Q,[]),
+%       show_options([]);
 
-    "3" ->
-      ok;
-    _ ->
-      io:fwrite("Please enter valid input"),
-      show_options([]),
-      ok
-  end;
+%     "3" ->
+%       ok;
+%     _ ->
+%       io:fwrite("Please enter valid input"),
+%       show_options([]),
+%       ok
+%   end;
 
 show_options([H|T]) ->
   Response = get_response1(),
