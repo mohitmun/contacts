@@ -93,7 +93,7 @@ my_search(Q2, [H2 | T2]) ->
   Index = match(H1, Q1, Q1, 0),
   % io:format("searching:  index:~s term:~s  index ~n", [integer_to_list(Index), H1]),
   if Index =/= 0 ->
-    io:format("~s occurances:~p~n", [H2,Index]);
+    io:format("~s~n", [H2]);
     true -> ok
   end,
   my_search(Q1,T1).
