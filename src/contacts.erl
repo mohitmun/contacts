@@ -60,7 +60,7 @@ show_options([H|T]) ->
     "3" ->
       ok;
     _ ->
-      io:fwrite("Please enter valid input"),
+      io:fwrite("Please enter valid input\n"),
       show_options([A]),
       ok
   end.
@@ -75,13 +75,16 @@ my_print([H1 | T1]) ->
 my_search(Q1,[]) ->
   ok;
 
-my_search(Q1, [H1 | T1]) ->
+my_search(Q2, [H2 | T2]) ->
   % Index = string:str(H1, Q1),
   % Lets count occurances
+  H1 = string:to_lower(H2),
+  T1 = string:to_lower(T2),
+  Q1 = string:to_lower(Q2),
   Index = match(H1, Q1, Q1, 0),
   % io:format("searching:  index:~s term:~s  index ~n", [integer_to_list(Index), H1]),
   if Index =/= 0 ->
-    io:format("~s occurances:~p~n", [H1,Index]);
+    io:format("~s occurances:~p~n", [H2,Index]);
     true -> ok
   end,
   my_search(Q1,T1).
