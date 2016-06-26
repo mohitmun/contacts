@@ -1,10 +1,20 @@
 -module(contacts).
-
--export([start_link/0, my_print/1, show_options/1]).
+-behaviour(supervisor_bridge).
+-export([start_link/0, show_options/1]).
 -export([get_response1/0, get_name/0, get_search_term/0]).
+-export([init/1, terminate/2]).
+-record(state, {pid}).
 
 start_link() ->
-    start().
+    supervisor_bridge:start_link(?MODULE, []).
+
+init([]) ->
+    Pid = spawn(fun start/0),
+    {ok, Pid, #state{pid=Pid}}.
+
+terminate(_Reason, #state{pid=Pid}) ->
+    exit(Pid, kill),
+    ok.
 
 start() ->
     % case Response of
@@ -46,9 +56,9 @@ get_search_term() ->
 %   end;
 
 show_options([H|T]) ->
-  Response = get_response1(),
   A = H ++ T,
-  my_print(A),
+  % my_print(A),
+  Response = get_response1(),
   case Response of
     "1" ->
       Name1 = get_name(),
@@ -65,12 +75,11 @@ show_options([H|T]) ->
       ok
   end.
 
-my_print([]) ->
-  ok;
+% my_print([]) ->
+%   ok;
 
-my_print([H1 | T1]) ->
-  io:format("printing: ~p~n", [H1]),
-  my_print(T1).
+% my_print(List) ->
+%   io:format("printing: ~p~n",[List] ).
 
 my_search(Q1,[]) ->
   ok;
