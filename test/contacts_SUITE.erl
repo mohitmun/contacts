@@ -1,27 +1,23 @@
--module(muumuu_SUITE).
+-module(contacts_SUITE).
 -include_lib("common_test/include/ct.hrl").
 -compile(export_all).
 
-%% Copy/pasting from the suite
--record(state, {no_vent_count=0,
-                pid,
-                yes,
-                no}).
 
 all() ->
-    [demo_session].
+    [add_all_contacts, search_basic].
 
-init_per_testcase(demo_session, Config) ->
+init_per_testcase(_, Config) ->
     mock_io(),
-    {ok, Pid} = muumuu_fsm:start_link(),
+    % ct:print("Wow ~p~n", [4343]),
+    {ok, Pid} = contacts_sup:start_link(),
+    % ct:print("Wow ~p~n", [Pid]),
     [{pid, Pid} | Config].
 
 end_per_testcase(_, Config) ->
     meck:unload(io),
     Pid = ?config(pid, Config),
     unlink(Pid),
-    exit(Pid, shutdown),
-    wait_for_death(Pid).
+    exit(Pid, shutdown).
 
 mock_io() ->
     %% For this one we mock the IO system so that instead of
@@ -40,22 +36,16 @@ mock_io() ->
         ok
     end),
     meck:expect(io, format, fun(Str, Args) ->
-        Parent ! {out, io_lib:format(Str,Args)},
+        Parent ! {out, lists:flatten(io_lib:format(Str,Args))},
         ok
     end),
     meck:expect(io, get_line, fun(_Prompt) ->
+        Parent ! {out, _Prompt},
         Parent ! {in, self()},
-        receive {Parent, In} -> In end
+        receive {Parent, In} ->
+            In
+        end
     end).
-
-wait_for_death(Pid) ->
-    case is_process_alive(Pid) of
-        true ->
-            timer:sleep(10),
-            wait_for_death(Pid);
-        false ->
-            ok
-    end.
 
 %%%%%%%%%%%%%%%%%%
 %%% TEST CASES %%%
@@ -65,34 +55,48 @@ wait_for_death(Pid) ->
 %% will yield expected output. There should be a prompt waiting
 %% for a key.
 %% All states can be cycled through using only Y/N answers.
-demo_session(Config) ->
-    Pid = ?config(pid, Config),
-    out("press.*any.*key.*>"),
-    in("<tab>"), % the characters shouldn't matter
-    out("check.*core.*temp.*>"),
-    in("Y"),
-    out("temperature.*normal"),
-    out("vent.*radioactive.*gas.*>"),
-    in("no"),
-    out("venting.*prevents.*explosion.*>"),
-    in("yES"),
-    out("gas.*blows.*crop.*"),
-    gen_fsm:send_event(Pid, timeout), % force a timeout faster
-    out(".*Y/N.*>"), % some question
-    in("No"), % who cares
-    in("vent gAs"), % force a command
-    out("gas.*blows.*crop.*").
+
+
+% https://howistart.org/posts/erlang/1 Rocks
+add_all_contacts(Config) ->
+    out("Add.*"),
+    in("1"),
+    out("Enter name.*"),
+    in("Mohit Munjani"),
+    out("Add.*"),
+    in("1"),
+    out("Enter name.*"),
+    in("Mohit HelpShift"),
+    out("Add.*"),
+    in("1"),
+    out("Enter name.*"),
+    in("HelpShift"),
+    out("Add.*"),
+    in("1"),
+    out("Enter name.*"),
+    in("Mohit CanCodeInErlang").
+
+search_basic(Config) ->
+    add_all_contacts(Config),
+    out("Add.*"),
+    in("2"),
+    out("Search name.*"),
+    in("Moh"),
+    out("Mohit Munjani"),
+    out("Mohit HelpShift"),
+    out(".*Mohit.*Can").
+
 
 %%%%%%%%%%%%%%%
 %%% HELPERS %%%
 %%%%%%%%%%%%%%%
 
 in(Input) ->
+    ct:print("Input: ~p~n", [Input]),
     receive
-        {in, Pid} -> Pid ! {self(), Input}
-    after 1000 ->
-        ct:print("MBOX: ~p", [process_info(self(), messages)]),
-        error({too_long, {in, Input}})
+        {in, Pid} -> 
+            % ct:print("Recepieved"),
+            Pid ! {self(), Input}
     end.
 
 %% fuzzily match the input string, waiting 1s at most
@@ -101,7 +105,4 @@ out(Expected) ->
         {out, Prompt} ->
             ct:print("Expected: ~p~nPrompt: ~p", [Expected, Prompt]),
             {match, _} = re:run(Prompt, Expected, [dotall, caseless, global])
-    after 1000 ->
-        ct:print("MBOX: ~p", [process_info(self(), messages)]),
-        error({too_long, {out, Expected}})
     end.

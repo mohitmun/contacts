@@ -75,16 +75,17 @@ show_options([H|T]) ->
       ok
   end.
 
-% my_print([]) ->
-%   ok;
-
-% my_print(List) ->
-%   io:format("printing: ~p~n",[List] ).
-
-my_search(Q1,[]) ->
+my_print([]) ->
   ok;
 
-my_search(Q2, [H2 | T2]) ->
+my_print([H|T]) ->
+  io:format("~s~n",[H]),
+  my_print(T).
+
+my_search(Q1, A1) ->
+  my_search1(Q1, A1, []).
+
+my_search1(Q2, [H2 | T2], R) ->
   % Index = string:str(H1, Q1),
   % Lets count occurances
   H1 = string:to_lower(H2),
@@ -93,11 +94,13 @@ my_search(Q2, [H2 | T2]) ->
   Index = match(H1, Q1, Q1, 0),
   % io:format("searching:  index:~s term:~s  index ~n", [integer_to_list(Index), H1]),
   if Index =/= 0 ->
-    io:format("~s~n", [H2]);
-    true -> ok
-  end,
-  my_search(Q1,T1).
+    my_search1(Q1, T1, R ++ H2);
+    true -> my_search1(Q1,T1, R)
+  end;
 
+my_search1(Q1,[], R) ->
+  my_print(R),
+  ok.
 % https://www.rosettacode.org/wiki/Count_occurrences_of_a_substring#Erlang
 %% String and Sub exhausted, count a match and present result
 match([], [], _OrigSub, Acc) ->
