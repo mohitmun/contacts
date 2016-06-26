@@ -1,11 +1,11 @@
-all: build test1 run
+all: build
 
 build: 
-	rebar3 compile
-	rebar3 release
+	./rebar3 compile
+	./rebar3 release
 
 run:
 	./_build/default/rel/contacts/bin/contacts
 
 test1:
-	rebar3 ct
+	./rebar3 ct
