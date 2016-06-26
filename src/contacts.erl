@@ -75,12 +75,22 @@ show_options([H|T]) ->
       ok
   end.
 
-my_print([]) ->
-  ok;
+% my_print([]) ->
+%   ok.
 
-my_print([H|T]) ->
-  io:format("~s~n",[H]),
-  my_print(T).
+my_print1([H|T], O) ->
+  my_print1(T, H),
+  {_,B} = H,
+  io:format("~s~n", [B]);
+
+my_print1([], Last) ->
+  ok.
+
+my_print(List) ->
+  my_print1(List, List).
+  % {_,B} = H,
+  % io:format("~s~n",[B]),
+  % my_print().
 
 my_search(Q1, A1) ->
   my_search1(Q1, A1, []).
@@ -92,15 +102,15 @@ my_search1(Q2, [H2 | T2], R1) ->
   H1 = string:to_lower(H2),
   T1 = string:to_lower(T2),
   Q1 = string:to_lower(Q2),
-  Index = match(H1, Q1, Q1, 0),
+  Occurances = match(H1, Q1, Q1, 0),
   % io:format("searching:  index:~s term:~s  index ~n", [integer_to_list(Index), H1]),
-  if Index =/= 0 ->
-    my_search1(Q1, T1, R1 ++ [H2] );
+  if Occurances =/= 0 ->
+    my_search1(Q1, T1, R1 ++ [{ Occurances/string:len(H2) , H2}] );
     true -> my_search1(Q1,T1, R1)
   end;
 
 my_search1(Q1,[], R) ->
-  my_print(R),
+  my_print(lists:keysort(1, R)),
   ok.
 % https://www.rosettacode.org/wiki/Count_occurrences_of_a_substring#Erlang
 %% String and Sub exhausted, count a match and present result
